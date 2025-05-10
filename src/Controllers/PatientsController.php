@@ -2,30 +2,17 @@
 
 namespace App\Controllers;
 
+use App\utils\RespondHandle;
+
 class PatientsController
 {
 
-    private function respond($data, int $statusCode = 200)
-    {
-        http_response_code($statusCode);
-        header('Content-Type: application/json');
-        echo json_encode([
-            'status' => $statusCode,
-            'data' => $data
-        ]);
-        exit;
-    }
+    private $responder;
 
-    private function respondError($message, int $statusCode = 400)
+    public function __construct()
     {
-        http_response_code($statusCode);
-        header('Content-Type: application/json');
-        echo json_encode([
-            'status' => $statusCode,
-            'error' => $message
-        ]);
-        exit;
-    }   
+        $this->responder = new RespondHandle();
+    }
 
     public function index()
     {
@@ -34,18 +21,18 @@ class PatientsController
             ['id' => 1, 'name' => 'John Doe'],
             ['id' => 2, 'name' => 'Jane Smith']
         ];
-        $this->respond($patients);
+        RespondHandle::respond($patients);
     }
 
     public function get($patientId)
     {
         if (empty($patientId)) {
-            $this->respondError('Patient ID is required', 400);
+            RespondHandle::responseError('Patient ID is required', 400);
         }
 
         // $patient = getPatients();
         $patient = ['id' => $patientId, 'name' => "Patient $patientId"];
-        $this->respond($patient);
+        RespondHandle::respond($patient);
     }
 
     public function create()
@@ -53,15 +40,15 @@ class PatientsController
         $data = json_decode(file_get_contents('php://input'), true);
 
         if (!$data) {
-            $this->respondError('Invalid or missing JSON payload', 400);
+            RespondHandle::responseError('Invalid or missing JSON payload', 400);
         }
 
         if(!isset($data['name'], $data['age'])){
-            $this->respondError('Missing required fiels', 400);
+            RespondHandle::responseError('Missing required fiels', 400);
         }
 
         // addPatients();
-        $this->respond([
+        RespondHandle::respond([
             'message' => 'Patient created successfully',
             'patient' => $data
         ], 201);
@@ -71,21 +58,21 @@ class PatientsController
     public function update($patientId)
     {
         if (empty($patientId)) {
-            $this->respondError('Patient ID is required', 400);
+            RespondHandle::responseError('Patient ID is required', 400);
         }
 
         $data = json_decode(file_get_contents('php://input'), true);
 
         if (!$data) {
-            $this->respondError('Invalid or missing JSON payload', 400);
+            RespondHandle::responseError('Invalid or missing JSON payload', 400);
         }
 
         if(!isset($data['name'], $data['age'])){
-            $this->respondError('Missing required fiels', 400);
+            RespondHandle::responseError('Missing required fiels', 400);
         }
 
         // updatePatients();
-        $this->respond([
+        RespondHandle::respond([
             'message' => "Patient with ID $patientId updated successfully",
             'updated_data' => $data
         ]);
@@ -94,11 +81,11 @@ class PatientsController
     public function delete($patientId)
     {
         if (empty($patientId)) {
-            $this->respondError('Patient ID is required', 400);
+            RespondHandle::responseError('Patient ID is required', 400);
         }
 
         // deletePatients();
-        $this->respond([
+        RespondHandle::respond([
             'message' => "Patient with ID $patientId deleted successfully"
         ]);
     }

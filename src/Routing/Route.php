@@ -17,15 +17,22 @@ class Route
             $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
             $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '/';
             $segments = array_values(array_filter(explode('/', $uri)));
-    
+            
             $controllerEnd = null;
             $params = [];
             $matchedRoute = null;
-    
+            $match = true;
+            
+ 
             foreach (self::$routes as $route) {
+                $routeFistsPos = explode('.', $route);
+                //print_r(['$routes'=>$routeFistsPos[0], '$segments'=> $segments[0]]);
+                if($routeFistsPos[0] != $segments[0]){
+                    $match = false;
+                }
                 $routeSegments = explode('.', $route);
                 $segmentsCopy = $segments;
-                $match = true;
+                
                 $tempParams = [];
                 $expectingControllerSuffix= false;
                 $tempControllerEnd = null;
@@ -46,11 +53,16 @@ class Route
                         }
                     }
                 }
+
     
                 if ($match) {
+
+                    //echo '<br>';
                     $params = array_slice($segmentsCopy, count($routeSegments));
+
                     $controllerEnd = $tempControllerEnd;
                     $matchedRoute = $routeSegments;
+ 
                     break;
                 }
             }

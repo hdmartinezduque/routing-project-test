@@ -2,36 +2,23 @@
 
 namespace App\Controllers;
 
+use App\utils\RespondHandle;
+
 class MetricsController
 {
 
-    private function respond($data, int $statusCode = 200)
-    {
-        http_response_code($statusCode);
-        header('Content-Type: application/json');
-        echo json_encode([
-            'status' => $statusCode,
-            'data' => $data
-        ]);
-        exit;
-    }
+    private $responder;
 
-    private function respondError($message, int $statusCode = 400)
+    public function __construct()
     {
-        http_response_code($statusCode);
-        header('Content-Type: application/json');
-        echo json_encode([
-            'status' => $statusCode,
-            'error' => $message
-        ]);
-        exit;
+        $this->responder = new RespondHandle();
     }
 
 
     public function index($patientId)
     {
         if (empty($patientId)) {
-            $this->respondError('Patient ID is required', 400);
+            RespondHandle::respond('Patient ID is required', 400);
         }
 
         // //patientsMetrics = listpatientsMetrics();
@@ -39,71 +26,66 @@ class MetricsController
             ['id' => 1, 'type' => 'Blood Pressure', 'value' => '120/80'],
             ['id' => 2, 'type' => 'Heart Rate', 'value' => '72 bpm']
         ];
+        RespondHandle::respond(['patientId' => $patientId,'metrics' => $metrics]);
 
-        $this->respond([
-            'patientId' => $patientId,
-            'metrics' => $metrics
-        ]);
     }
 
     public function get($patientId, $metricId)
     {
         if (empty($patientId) || empty($metricId)) {
-            $this->respondError('Patient ID and Metric ID are required', 400);
-        }
+            RespondHandle::responseError('Patient ID and Metric ID are required', 400);
 
-        // $patientMetric = getPatientsMetrics();
+        }
         $metric = [
             'id' => $metricId,
             'patientId' => $patientId,
             'type' => 'Blood Pressure',
             'value' => '120/80'
         ];
-
-        $this->respond($metric);
+        RespondHandle::respond($metric);
     }
 
     public function create($patientId)
     {
         if (empty($patientId)) {
-            $this->respondError('Patient ID is required', 400);
-        }
+            RespondHandle::responseError('Patient ID is required', 400);
+        }   
 
         $data = json_decode(file_get_contents('php://input'), true);
 
         if (!$data) {
-            $this->respondError('Invalid or missing JSON payload', 400);
+            RespondHandle::responseError('Invalid or missing JSON payload', 400);
         }
 
         if(!isset($data['type'], $data['value'])){
-            $this->respondError('Missing required fiels', 400);
+            RespondHandle::responseError('Missing required fiels', 400);
         }
 
         // addPatientsMetrics();
-        $this->respond([
+        RespondHandle::respond([
             'message' => "Metric created successfully for patient ID $patientId",
             'metric' => $data
-        ], 201);
+           ], 201);
     }
 
     public function update($patientId, $metricId)
     {
         if (empty($patientId) || empty($metricId)) {
-            $this->respondError('Patient ID and Metric ID are required', 400);
+            RespondHandle::responseError('Patient ID and Metric ID are required', 400);
         }
 
         $data = json_decode(file_get_contents('php://input'), true);
 
         if (!$data) {
-            $this->respondError('Invalid or missing JSON payload', 400);
+            RespondHandle::responseError('Invalid or missing JSON payload', 400);
         }
 
         if(!isset($data['value'])){
-            $this->respondError('Missing required fiels', 400);
+            RespondHandle::responseError('Missing required fiels', 400);
         }
 
         // // updatePatientsMetric();
-        $this->respond([
+        RespondHandle::respond([
             'message' => "Metric ID $metricId updated for patient ID $patientId",
             'updated_data' => $data
         ]);
@@ -112,11 +94,11 @@ class MetricsController
     public function delete($patientId, $metricId)
     {
         if (empty($patientId) || empty($metricId)) {
-            $this->respondError('Patient ID and Metric ID are required', 400);
+            RespondHandle::responseError('Patient ID and Metric ID are required', 400);
         }
 
         // // deletePatientsMetric();
-        $this->respond([
+        RespondHandle::respond([
             'message' => "Metric ID $metricId deleted for patient ID $patientId"
         ]);
     }
