@@ -7,12 +7,6 @@ use App\utils\RespondHandle;
 class MetricsController
 {
 
-    private $responder;
-
-    public function __construct()
-    {
-        $this->responder = new RespondHandle();
-    }
 
 
     public function index($patientId)
